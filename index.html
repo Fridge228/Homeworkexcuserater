@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Homework Excuse Rater</title>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: #FFF9F0;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, #e8d9c4 27px, #e8d9c4 28px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, #f5ead8 39px, #f5ead8 40px);
+  }
+
+  .notebook-line {
+    position: fixed;
+    left: 72px; top: 0; bottom: 0;
+    width: 2px;
+    background: #e8a8a8;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  header { text-align: center; margin-bottom: 1.8rem; }
+
+  .title-stamp {
+    display: inline-block;
+    background: #e63946;
+    color: white;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 2.2rem;
+    padding: 0.4rem 1.2rem;
+    transform: rotate(-2deg);
+    box-shadow: 4px 4px 0px #b5252f;
+    margin-bottom: 0.6rem;
+    letter-spacing: 1px;
+  }
+
+  /* MENU SCREEN */
+  #menu-screen {
+    display: block;
+    text-align: center;
+    padding-top: 2rem;
+  }
+  #menu-screen.hidden { display: none; }
+
+  .panic-box {
+    background: #fff5f5;
+    border: 3px solid #e63946;
+    padding: 2rem;
+    border-radius: 4px;
+    box-shadow: 6px 6px 0px #c1121f;
+    margin-bottom: 2.5rem;
+    position: relative;
+  }
+  .panic-box::before {
+    content: '⚠️';
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .panic-text {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.6rem;
+    color: #b5252f;
+    line-height: 1.4;
+  }
+
+  .menu-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 480px) {
+    .menu-options { grid-template-columns: 1fr; gap: 1rem; }
+  }
+
+  .menu-btn {
+    background: white;
+    border: 3px solid #333;
+    border-radius: 6px;
+    padding: 1.5rem 1rem;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.3rem;
+    cursor: pointer;
+    box-shadow: 5px 5px 0px #333;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .menu-btn .emoji { font-size: 2.5rem; }
+  .menu-btn.excuse-opt { color: #e63946; border-color: #e63946; box-shadow: 5px 5px 0px #e63946; }
+  .menu-btn.excuse-opt:hover { background: #fff5f5; transform: translate(-2px, -2px); box-shadow: 7px 7px 0px #e63946; }
+  .menu-btn.hw-opt { color: #2d6a4f; border-color: #2d6a4f; box-shadow: 5px 5px 0px #2d6a4f; }
+  .menu-btn.hw-opt:hover { background: #f0faf5; transform: translate(-2px, -2px); box-shadow: 7px 7px 0px #2d6a4f; }
+  .menu-btn:active { transform: translate(3px, 3px); box-shadow: 0px 0px 0px transparent !important; }
+
+  /* APP CONTENT STATES */
+  .mode-section { display: none; }
+  .mode-section.active { display: block; }
+
+  .back-menu-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: color 0.15s;
+  }
+  .back-menu-btn:hover { color: #333; }
+
+  /* STANDARD CARDS AND UI */
+  .card {
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    padding: 1.8rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 4px 4px 0px #ddd;
+    position: relative;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    left: -12px; top: 50%;
+    transform: translateY(-50%);
+    width: 20px; height: 20px;
+    background: #FFF9F0;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+  }
+
+  .card-label {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 0.9rem;
+    color: #e63946;
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .card-label.green { color: #2d6a4f; }
+
+  textarea {
+    width: 100%;
+    min-height: 110px;
+    border: none;
+    border-bottom: 2px dashed #ccc;
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.05rem;
+    color: #333;
+    resize: vertical;
+    outline: none;
+    line-height: 1.7;
+    padding: 0.3rem 0;
+  }
+
+  textarea::placeholder { color: #ccc; font-style: italic; }
+
+  .examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .example-chip {
+    background: #FFF3E0;
+    border: 1.5px solid #FFD180;
+    border-radius: 20px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.82rem;
+    color: #E65100;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .example-chip:hover { background: #FFD180; transform: translateY(-1px); }
+
+  .submit-btn {
+    width: 100%;
+    padding: 1rem;
+    background: #e63946;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #b5252f;
+    transition: all 0.1s;
+    letter-spacing: 1px;
+    margin-top: 0.5rem;
+  }
+
+  .submit-btn:hover { background: #c1121f; box-shadow: 0 4px 0 #8b0a14; }
+  .submit-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #b5252f; }
+  .submit-btn:disabled { background: #ccc; box-shadow: 0 4px 0 #aaa; cursor: not-allowed; }
+
+  .result-card {
+    display: none;
+    background: white;
+    border: 3px solid #333;
+    border-radius: 4px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    box-shadow: 6px 6px 0px #333;
+  }
+
+  .result-card.visible { display: block; animation: slideIn 0.4s ease; }
+
+  .grade-stamp {
+    position: absolute;
+    top: -20px; right: 20px;
+    background: white;
+    border: 3px solid currentColor;
+    border-radius: 50%;
+    width: 72px; height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.8rem;
+    transform: rotate(12deg);
+  }
+
+  .grade-A { color: #2d6a4f; border-color: #2d6a4f; }
+  .grade-B { color: #52b788; border-color: #52b788; }
+  .grade-C { color: #e07c24; border-color: #e07c24; }
+  .grade-D { color: #d94e34; border-color: #d94e34; }
+  .grade-F { color: #9b2226; border-color: #9b2226; }
+
+  .score-bar-wrap {
+    background: #f5f5f5;
+    border-radius: 4px;
+    height: 18px;
+    margin: 1rem 0 0.3rem;
+    overflow: hidden;
+    border: 1.5px solid #ddd;
+  }
+
+  .score-bar {
+    height: 100%;
+    border-radius: 2px;
+    width: 0%;
+    transition: width 1s cubic-bezier(.34,1.56,.64,1);
+    background: #e63946;
+  }
+
+  .verdict-label {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  .teacher-response {
+    font-size: 1rem;
+    color: #444;
+    line-height: 1.7;
+    border-left: 3px solid #e63946;
+    padding-left: 1rem;
+    margin: 1rem 0;
+    font-style: italic;
+  }
+
+  .breakdown {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    margin-top: 1.2rem;
+  }
+
+  .breakdown-item {
+    background: #fafafa;
+    border: 1.5px solid #eee;
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+  }
+
+  .breakdown-item .b-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+
+  .breakdown-item .b-score { font-size: 1.1rem; font-weight: 900; color: #333; }
+
+  .try-again-btn {
+    width: 100%;
+    padding: 0.7rem;
+    background: transparent;
+    color: #e63946;
+    border: 2px solid #e63946;
+    border-radius: 6px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.15s;
+  }
+
+  .try-again-btn:hover { background: #fff5f5; }
+
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 2rem;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.2rem;
+    color: #e63946;
+  }
+
+  .loading.visible { display: block; }
+
+  .loading-dots::after {
+    content: '';
+    animation: dots 1.5s infinite;
+  }
+
+  @keyframes dots {
+    0% { content: ''; }
+    33% { content: '.'; }
+    66% { content: '..'; }
+    100% { content: '...'; }
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .error-msg {
+    background: #fff5f5;
+    border: 1.5px solid #e63946;
+    border-radius: 6px;
+    padding: 0.8rem 1rem;
+    color: #c1121f;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 0.8rem;
+    display: none;
+  }
+
+  /* HOMEWORK MODE */
+  .subject-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+
+  .subject-btn {
+    border: 2px solid #ddd;
+    background: white;
+    border-radius: 8px;
+    padding: 0.8rem 0.4rem;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    color: #555;
+  }
+
+  .subject-btn .emoji { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+  .subject-btn:hover { border-color: #aaa; background: #f5f5f5; }
+  .subject-btn.selected { border-color: #2d6a4f; background: #f0faf5; color: #2d6a4f; }
+
+  .hw-btn {
+    width: 100%;
+    padding: 1rem;
+    background: #2d6a4f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #1a3d2e;
+    transition: all 0.1s;
+    letter-spacing: 1px;
+    margin-top: 0.5rem;
+  }
+
+  .hw-btn:hover { background: #1b4332; }
+  .hw-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #1a3d2e; }
+  .hw-btn:disabled { background: #ccc; box-shadow: 0 4px 0 #aaa; cursor: not-allowed; }
+
+  .hw-loading {
+    display: none;
+    text-align: center;
+    padding: 1.5rem;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.1rem;
+    color: #2d6a4f;
+  }
+
+  .hw-loading.visible { display: block; }
+
+  .hw-question-card {
+    display: none;
+    background: white;
+    border: 3px solid #2d6a4f;
+    border-radius: 4px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 6px 6px 0px #2d6a4f;
+  }
+
+  .hw-question-card.visible { display: block; animation: slideIn 0.4s ease; }
+
+  .subject-badge {
+    display: inline-block;
+    background: #f0faf5;
+    color: #2d6a4f;
+    border: 1.5px solid #2d6a4f;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.2rem 0.8rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .timer-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.2rem;
+    background: #fff8f0;
+    border: 1.5px solid #FFD180;
+    border-radius: 6px;
+    padding: 0.5rem 0.9rem;
+  }
+
+  .timer-display {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.4rem;
+    color: #e63946;
+    min-width: 55px;
+  }
+
+  .timer-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .timer-bar-wrap {
+    flex: 1;
+    background: #eee;
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+  }
+
+  .timer-bar {
+    height: 100%;
+    background: #2d6a4f;
+    border-radius: 4px;
+    transition: width 1s linear, background 0.5s;
+  }
+
+  .question-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #222;
+    line-height: 1.6;
+    margin-bottom: 1.2rem;
+  }
+
+  .hw-answer-input {
+    width: 100%;
+    border: none;
+    border-bottom: 2.5px solid #2d6a4f;
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    color: #333;
+    outline: none;
+    padding: 0.4rem 0;
+    margin-bottom: 1rem;
+  }
+
+  .hw-answer-input::placeholder { color: #bbb; font-style: italic; }
+
+  .submit-answer-btn {
+    width: 100%;
+    padding: 0.8rem;
+    background: #2d6a4f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #1a3d2e;
+    transition: all 0.1s;
+    letter-spacing: 1px;
+  }
+
+  .submit-answer-btn:hover { background: #1b4332; }
+  .submit-answer-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #1a3d2e; }
+  .submit-answer-btn:disabled { background: #ccc; box-shadow: 0 3px 0 #aaa; cursor: not-allowed; }
+
+  .hw-result {
+    display: none;
+    margin-top: 1.2rem;
+    border-top: 2px dashed #ccc;
+    padding-top: 1.2rem;
+  }
+
+  .hw-result.visible { display: block; animation: slideIn 0.3s ease; }
+
+  .hw-verdict { font-family: 'Permanent Marker', cursive; font-size: 1.3rem; margin-bottom: 0.6rem; }
+  .hw-verdict.correct { color: #2d6a4f; }
+  .hw-verdict.partial { color: #e07c24; }
+  .hw-verdict.wrong { color: #e63946; }
+
+  .hw-explanation {
+    font-size: 0.95rem;
+    color: #444;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+    font-style: italic;
+    border-left: 3px solid #2d6a4f;
+    padding-left: 1rem;
+  }
+
+  .correct-answer-box {
+    background: #f0faf5;
+    border: 1.5px solid #2d6a4f;
+    border-radius: 6px;
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+    color: #1b4332;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .try-new-btn {
+    width: 100%;
+    padding: 0.65rem;
+    background: transparent;
+    color: #2d6a4f;
+    border: 2px solid #2d6a4f;
+    border-radius: 6px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 0.4rem;
+  }
+
+  .try-new-btn:hover { background: #f0faf5; }
+
+  .hw-error-msg {
+    background: #fff5f5;
+    border: 1.5px solid #e63946;
+    border-radius: 6px;
+    padding: 0.8rem 1rem;
+    color: #c1121f;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 0.8rem;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="notebook-line"></div>
+
+<div class="container">
+  <header>
+    <div class="title-stamp">Excuse Me!</div>
+  </header>
+
+  <div id="menu-screen">
+    <div class="panic-box">
+      <div class="panic-text">Your teacher is asking for yesterday's homework and you didn't do it!</div>
+    </div>
+    
+    <div class="menu-options">
+      <button class="menu-btn excuse-opt" onclick="enterMode('excuse')">
+        <span class="emoji">🚨</span>
+        <span>Give an Excuse</span>
+      </button>
+      <button class="menu-btn hw-opt" onclick="enterMode('homework')">
+        <span class="emoji">📚</span>
+        <span>Do It Last Minute</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mode-section" id="mode-excuse">
+    <button class="back-menu-btn" onclick="returnToMenu()">← Back to Menu</button>
+    
+    <div class="card">
+      <div class="card-label">✏️ Your Excuse (Assigned Teacher: Normal Teacher 😐)</div>
+      <textarea id="excuse-input" placeholder="e.g. My dog ate it. My grandma's wifi went down. A time traveler took it for historical research..."></textarea>
+      <div class="examples">
+        <span class="example-chip" onclick="setExcuse('My dog ate it')">🐶 Dog ate it</span>
+        <span class="example-chip" onclick="setExcuse('My little sibling scribbled all over it')">👶 Sibling attacked it</span>
+        <span class="example-chip" onclick="setExcuse('A bird flew through the window and took it')">🐦 Bird stole it</span>
+        <span class="example-chip" onclick="setExcuse('The computer crashed and deleted everything right before I saved')">💻 Computer died</span>
+        <span class="example-chip" onclick="setExcuse('I accidentally left it on the bus and someone took it')">🚌 Left on bus</span>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="rateExcuse()">SUBMIT EXCUSE TO TEACHER →</button>
+    <div class="error-msg" id="error-msg"></div>
+
+    <div class="loading" id="loading">
+      <p>Teacher is reviewing your excuse<span class="loading-dots"></span></p>
+      <p style="font-size:0.85rem; color:#aaa; margin-top:0.5rem; font-family: Nunito, sans-serif; font-weight:600;">checking the grading criteria...</p>
+    </div>
+
+    <div class="result-card" id="result-card">
+      <div class="grade-stamp" id="grade-stamp">C</div>
+      <div class="verdict-label" id="verdict-label">Verdict</div>
+      <div class="score-bar-wrap">
+        <div class="score-bar" id="score-bar"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#aaa; font-weight:700; margin-bottom:0.5rem;">
+        <span>0 — Zero Credit</span><span>100 — Full Credit</span>
+      </div>
+      <div class="teacher-response" id="teacher-response"></div>
+      <div class="breakdown" id="breakdown"></div>
+      <button class="try-again-btn" onclick="resetExcuse()">Try a different excuse ↺</button>
+    </div>
+  </div>
+
+  <div class="mode-section" id="mode-homework">
+    <button class="back-menu-btn" onclick="returnToMenu()">← Back to Menu</button>
+
+    <div class="card">
+      <div class="card-label green">📖 Pick an 8th Grade Subject</div>
+      <div class="subject-grid">
+        <button class="subject-btn selected" data-subject="English" onclick="selectSubject(this)">
+          <span class="emoji">📝</span>English
+        </button>
+        <button class="subject-btn" data-subject="Math" onclick="selectSubject(this)">
+          <span class="emoji">🔢</span>Math
+        </button>
+        <button class="subject-btn" data-subject="Science" onclick="selectSubject(this)">
+          <span class="emoji">🔬</span>Science
+        </button>
+        <button class="subject-btn" data-subject="History" onclick="selectSubject(this)">
+          <span class="emoji">🏛️</span>History
+        </button>
+      </div>
+    </div>
+
+    <button class="hw-btn" id="hw-start-btn" onclick="startHomework()">GET MY QUESTION ⚡</button>
+    <div class="hw-error-msg" id="hw-error-msg"></div>
+
+    <div class="hw-loading" id="hw-loading">
+      <p>Generating your question<span class="loading-dots"></span></p>
+      <p style="font-size:0.85rem; color:#aaa; margin-top:0.5rem; font-family: Nunito, sans-serif; font-weight:600;">cracking open the textbook...</p>
+    </div>
+
+    <div class="hw-question-card" id="hw-question-card">
+      <div class="subject-badge" id="hw-subject-badge">English</div>
+
+      <div class="timer-wrap">
+        <div>
+          <div class="timer-label">Time left</div>
+          <div class="timer-display" id="timer-display">2:00</div>
+        </div>
+        <div class="timer-bar-wrap">
+          <div class="timer-bar" id="timer-bar" style="width:100%"></div>
+        </div>
+      </div>
+
+      <div class="question-text" id="hw-question-text"></div>
+
+      <input type="text" class="hw-answer-input" id="hw-answer-input" placeholder="Type your answer here..." />
+      <button class="submit-answer-btn" id="submit-answer-btn" onclick="submitAnswer()">SUBMIT ANSWER ✓</button>
+
+      <div class="hw-result" id="hw-result">
+        <div class="hw-verdict" id="hw-verdict"></div>
+        <div class="correct-answer-box" id="correct-answer-box"></div>
+        <div class="hw-explanation" id="hw-explanation"></div>
+        <button class="try-new-btn" onclick="resetHomework()">Try another question ↺</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let selectedSubject = 'English';
+let currentQuestion = null;
+let currentAnswer = null;
+let timerInterval = null;
+let timeLeft = 120;
+const TIMER_SECONDS = 120;
+
+// Large variety 8th-grade bank
+const homeworkQuestionsBank = {
+  English: [
+    { question: "What type of irony occurs when the audience or reader knows something important that a character does not know?", answer: "dramatic irony", explanation: "Dramatic irony adds tension or humor because the audience watches a character make mistakes blindly." },
+    { question: "In a story, what is the term for the central, underlying message or deep insight about life that the author wants to convey?", answer: "theme", explanation: "The theme is the broader lesson or message, distinct from the literal plot summary." },
+    { question: "Identify the word serving as the participle in the following phrase: 'The crying baby kept everyone awake.'", answer: "crying", explanation: "A participle is a verb form acting as an adjective. Here, 'crying' describes the baby." },
+    { question: "What is the term for an extreme exaggeration used to make a point, such as 'I'm so hungry I could eat a horse'?", answer: "hyperbole", explanation: "Hyperboles are figures of speech not meant to be taken literally, used entirely for emphasis." },
+    { question: "Which punctuation mark is used to show a sudden break in thought or to emphasize a word or phrase at the end of a sentence?", answer: "dash", explanation: "An em-dash or regular dash sets off side-elements or dramatic shifts in sentence flow." },
+    { question: "What literary device assigns human characteristics or behaviors to non-human elements or animals?", answer: "personification", explanation: "Personification lets writers convey abstract concepts or environments with familiar human qualities." },
+    { question: "What is the term for the main character in a literary work, who often drives the action and faces the central conflict?", answer: "protagonist", explanation: "The protagonist is the central point of focus, while the antagonist provides opposition." },
+    { question: "Identify the conjunction in this sentence: 'I wanted to study, but I fell asleep.'", answer: "but", explanation: "'But' is a coordinating conjunction used to connect two independent clauses with contrasting ideas." },
+    { question: "What is the term for a comparison between two unlike things using the words 'like' or 'as'?", answer: "simile", explanation: "Similes highlight specific shared traits explicitly using connective terms like 'like' or 'as'." },
+    { question: "What point of view is a story told from if the narrator uses pronouns like 'I', 'me', and 'we'?", answer: "first person", explanation: "First-person perspective places the reader inside the immediate thoughts and experiences of the narrator." }
+  ],
+  Math: [
+    { question: "According to the Pythagorean theorem, if a right-angled triangle has legs of lengths 6 and 8, what is the length of the hypotenuse?", answer: "10", explanation: "Using a² + b² = c²: 6² + 8² = 36 + 64 = 100. The square root of 100 is 10." },
+    { question: "What is the value of x in the linear equation: 4x - 5 = 2x + 7?", answer: "6", explanation: "Subtract 2x from both sides to get 2x - 5 = 7. Add 5 to get 2x = 12. Dividing by 2 results in x = 6." },
+    { question: "Express the number 0.00045 in standard scientific notation. (Format answer exactly like: 4.5 x 10^-4)", answer: "4.5 x 10^-4", explanation: "We move the decimal point 4 places to the right, which creates a negative exponent of 4." },
+    { question: "What is the mathematical term for a straight line that connects two points on a circle and passes directly through its center?", answer: "diameter", explanation: "The diameter is exactly twice the length of the radius and marks the widest width across a circle." },
+    { question: "What is the square root of 144?", answer: "12", explanation: "Multiplying 12 by 12 produces 144." },
+    { question: "Calculate the slope of a line passing through coordinates (1, 3) and (3, 7).", answer: "2", explanation: "Slope is (y2 - y1) / (x2 - x1). Here, (7 - 3) / (3 - 1) = 4 / 2 = 2." },
+    { question: "What is the total sum of all interior angles inside any standard triangle?", answer: "180", explanation: "Regardless of size or scale, flattening out any triangle's corners always forms a perfect 180-degree straight path." },
+    { question: "What is the value of 5 to the power of 3 (5³)?", answer: "125", explanation: "5 cubed means multiplying 5 * 5 * 5, which equals 125." },
+    { question: "Solve for y: 3y + 9 = 0", answer: "-3", explanation: "Subtract 9 from both sides to get 3y = -9, then divide by 3 to arrive at y = -3." },
+    { question: "What do you call an angle that is greater than 90 degrees but less than 180 degrees?", answer: "obtuse", explanation: "An obtuse angle expands wider than a sharp 90-degree right angle but stays short of a straight line." }
+  ],
+  Science: [
+    { question: "Which tectonic plate boundary interaction occurs when two boundaries slide past each other horizontally, like the San Andreas Fault?", answer: "transform", explanation: "Transform boundaries grind sideways against each other, frequently initiating earthquakes." },
+    { question: "What form of heat transfer occurs through the direct contact of particles within a solid material?", answer: "conduction", explanation: "Conduction transfers heat through direct atomic collisions, unlike convection (fluids) or radiation (waves)." },
+    { question: "In genetics, what term describes an allele whose trait always shows up in the organism when the allele is present?", answer: "dominant", explanation: "Dominant alleles mask recessive genes in heterozygous pairings." },
+    { question: "What organelle is known as the powerhouse of the cell, responsible for converting food into usable ATP energy?", answer: "mitochondria", explanation: "Mitochondria carry out cellular respiration to energize the biological workflows of cells." },
+    { question: "Which dense, rocky layer of the Earth sits directly beneath the thin outer crust?", answer: "mantle", explanation: "The mantle accounts for most of Earth's volume and exhibits slow, convective movement over millions of years." },
+    { question: "What state of matter has a definite volume but no fixed shape, taking the shape of whatever container holds it?", answer: "liquid", explanation: "Liquids have closely packed atoms that can still shift past each other freely." },
+    { question: "What process do plants use to convert sunlight, carbon dioxide, and water into oxygen and glucose sugar?", answer: "photosynthesis", explanation: "Photosynthesis uses chlorophyll to absorb light energy and assemble structural energy blocks for the plant." },
+    { question: "What is the chemical symbol for the element Water? (Format answer exactly like: H2O)", answer: "H2O", explanation: "Each individual water molecule consists of two hydrogen atoms bonded tightly to one single oxygen atom." },
+    { question: "What are the basic structural blocks of all living organisms?", answer: "cells", explanation: "Cells represent the fundamental unit of life, grouping together to form tissues, organs, and complex systems." },
+    { question: "What standard unit measures force, defined as mass times acceleration?", answer: "newton", explanation: "Named after Sir Isaac Newton, one Newton is the force needed to move one kilogram at one meter per second squared." }
+  ],
+  History: [
+    { question: "Which 1863 Civil War battle in Pennsylvania is widely considered by historians to be the turning point of the war?", answer: "battle of gettysburg", explanation: "Gettysburg ended General Robert E. Lee's second invasion of the North and inflicted severe casualties." },
+    { question: "What name was given to the first 10 amendments made to the United States Constitution?", answer: "bill of rights", explanation: "The Bill of Rights was written to guarantee explicit protections for personal liberties and structural limitations on government power." },
+    { question: "Which major event in 1849 caused massive westward migration to California?", answer: "gold rush", explanation: "The discovery of gold at Sutter's Mill in 1848 triggered the historic '49er immigration surge." },
+    { question: "Who was the main primary author of the United States Declaration of Independence in 1776?", answer: "thomas jefferson", explanation: "Jefferson drafted the iconic proclamation detailing colonial grievances against the British Crown." },
+    { question: "Which ancient civilization constructed the iconic Colosseum and pioneered monumental aqueduct infrastructure across Europe?", answer: "rome", explanation: "The Roman Empire engineered extensive road systems, public arenas, and long-range water transport channels." },
+    { question: "Which war was fought between the Allied and Central powers from 1914 to 1918?", answer: "world war 1", explanation: "World War 1 reshaped global boundaries following trench warfare and the eventual collapse of multiple empires." },
+    { question: "What historical document, signed by King John in 1215, established the rule that everyone—including the king—is subject to the law?", answer: "magna carta", explanation: "The Magna Carta formed early legal constraints on absolute monarchies and inspired constitutional design elements later on." },
+    { question: "Which country gifted the historic Statue of Liberty to the United States as a sign of alliance and freedom?", answer: "france", explanation: "France delivered the pieces across the Atlantic to celebrate structural alliance ties and commemorate the abolition of slavery." },
+    { question: "Who was the first president of the United States?", answer: "george washington", explanation: "Washington commanded the Continental Army during the Revolution and served as executive leader from 1789 to 1797." },
+    { question: "What global socio-economic crash followed the stock market collapse of October 1929?", answer: "great depression", explanation: "The Great Depression triggered massive industrial drops, record unemployment spikes, and worldwide commercial distress." }
+  ]
+};
+
+function enterMode(mode) {
+  document.getElementById('menu-screen').classList.add('hidden');
+  document.querySelectorAll('.mode-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('mode-' + mode).classList.add('active');
+  
+  if (mode === 'excuse') { resetExcuse(); }
+  if (mode === 'homework') { resetHomework(); }
+}
+
+function returnToMenu() {
+  clearInterval(timerInterval);
+  document.querySelectorAll('.mode-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('menu-screen').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setExcuse(text) { document.getElementById('excuse-input').value = text; }
+
+function selectSubject(btn) {
+  document.querySelectorAll('.subject-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedSubject = btn.dataset.subject;
+}
+
+function checkContentOffline(text) {
+  const badWords = [
+    'hate', 'slur', 'idiot', 'stupid', 'curse', 'fuck', 'shit', 'bitch', 'ass', 
+    'bastard', 'crap', 'dick', 'piss', 'nigger', 'faggot', 'retard', 'kill yourself'
+  ]; 
+  const lowerText = text.toLowerCase();
+  return badWords.some(word => lowerText.includes(word));
+}
+
+function showInstantFail() {
+  const stamp = document.getElementById('grade-stamp');
+  stamp.textContent = 'F';
+  stamp.className = 'grade-stamp grade-F';
+  document.getElementById('verdict-label').textContent = "Why would you say that? That's messed up.";
+  document.getElementById('teacher-response').textContent = "I cannot believe you wrote that down. Using inappropriate language, profanity, or hate speech in a school environment results in an immediate referral, an automatic zero, and a phone call home. This is completely unacceptable.";
+  document.getElementById('breakdown').innerHTML = ['🎨 Creativity','🤞 Believability','✨ Originality','💔 Sympathy']
+    .map(label => '<div class="breakdown-item"><div class="b-label">' + label + '</div><div class="b-score">0/10</div></div>').join('');
+  document.getElementById('result-card').classList.add('visible');
+  setTimeout(() => { document.getElementById('score-bar').style.width = '0%'; }, 100);
+  document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function rateExcuse() {
+  const excuse = document.getElementById('excuse-input').value.trim();
+  const errorEl = document.getElementById('error-msg');
+  errorEl.style.display = 'none';
+  if (!excuse) { errorEl.textContent = "⚠️ Please write an excuse first!"; errorEl.style.display = 'block'; return; }
+
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('loading').classList.add('visible');
+  document.getElementById('result-card').classList.remove('visible');
+
+  setTimeout(() => {
+    document.getElementById('loading').classList.remove('visible');
+    
+    if (checkContentOffline(excuse)) {
+      showInstantFail();
+      return;
+    }
+
+    const lowerExcuse = excuse.toLowerCase();
+
+    // HARSH CRITERIA: Strictly catch lazy, blunt, or defiant phrases
+    const lazyPhrases = [
+      "don't want", "dont want", "didnt want", "didn't want", "was lazy", "felt lazy", 
+      "too lazy", "forgot", "i forgot", "asleep", "fell asleep", "just didn't", 
+      "just didnt", "no excuse", "sucks", "boring", "care"
+    ];
+
+    let isLazy = lazyPhrases.some(phrase => lowerExcuse.includes(phrase)) || excuse.split(/\s+/).length < 4;
+
+    let creativity, believability, originality, sympathy;
+
+    if (isLazy) {
+      // Forced brutal metrics for low-effort responses
+      creativity = Math.floor(Math.random() * 2);      // 0-1
+      believability = Math.floor(Math.random() * 3);  // 0-2
+      originality = Math.floor(Math.random() * 2);    // 0-1
+      sympathy = 0;
+    } else {
+      // Normal ranges shifted nicely to support high grades (6-9 base)
+      creativity = Math.min(10, Math.floor(Math.random() * 4) + 6);
+      believability = Math.min(10, Math.floor(Math.random() * 4) + 5);
+      originality = Math.min(10, Math.floor(Math.random() * 4) + 6);
+      sympathy = Math.min(10, Math.floor(Math.random() * 4) + 6);
+
+      // Structural text writing rewards
+      if (excuse.length > 50) {
+        creativity = Math.min(10, creativity + 2);
+        originality = Math.min(10, originality + 1);
+      }
+      if (lowerExcuse.includes("sorry") || lowerExcuse.includes("apologize") || lowerExcuse.includes("please")) {
+        sympathy = Math.min(10, sympathy + 2);
+      }
+    }
+
+    // Mathematical breakdown computation
+    let totalScore = Math.floor(((creativity + believability + originality + sympathy) / 40) * 100);
+    let r = { score: totalScore, grade: 'C', verdict: '', response: '', creativity, believability, originality, sympathy };
+
+    if (isLazy) {
+      r.grade = totalScore >= 25 ? 'D' : 'F';
+      r.verdict = "Zero effort. Completely unaccepted.";
+      r.response = "Are you serious right now? Telling me that you simply 'didn't want to' or 'forgot' shows a complete disregard for this class. You will receive a zero on this assignment and detention during lunch to complete it.";
+    } else {
+      if (totalScore >= 85) {
+        r.grade = 'A';
+        r.verdict = "Fair enough. Bring it tomorrow.";
+        r.response = "Look, I appreciate you being upfront and creative about what happened. I will extend your deadline by 24 hours for full credit. Just don't make this a habit!";
+      } else if (totalScore >= 70) {
+        r.grade = 'B';
+        r.verdict = "Accepted with a slight penalty.";
+        r.response = "I will accept this, but since it is late, the highest grade you can get on it now is an 80%. Please turn in what you have finished by lunchtime.";
+      } else if (totalScore >= 55) {
+        r.grade = 'C';
+        r.verdict = "Skeptical, but partial credit allowed.";
+        r.response = "I've heard this story a few times before from other students. I'll give you half-credit if you submit it by the end of the day, but that's the best I can do.";
+      } else {
+        r.grade = 'D';
+        r.verdict = "Highly questionable argument.";
+        r.response = "This simply isn't an acceptable excuse for failing to complete your tasks. I will give you partial credit if you pull something together, but it won't be much.";
+      }
+    }
+
+    showResult(r);
+  }, 1200);
+}
+
+function showResult(r) {
+  const gradeMap = { 'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'F': 'F' };
+  const stamp = document.getElementById('grade-stamp');
+  stamp.textContent = r.grade;
+  stamp.className = 'grade-stamp grade-' + (gradeMap[r.grade] || 'C');
+  document.getElementById('verdict-label').textContent = r.verdict;
+  document.getElementById('teacher-response').textContent = r.response;
+  document.getElementById('breakdown').innerHTML = [
+    { label: '🎨 Creativity', val: r.creativity },
+    { label: '🤞 Believability', val: r.believability },
+    { label: '✨ Originality', val: r.originality },
+    { label: '💔 Sympathy', val: r.sympathy }
+  ].map(item => '<div class="breakdown-item"><div class="b-label">' + item.label + '</div><div class="b-score">' + item.val + '/10</div></div>').join('');
+  
+  document.getElementById('result-card').classList.add('visible');
+  setTimeout(() => { document.getElementById('score-bar').style.width = Math.min(100, Math.max(0, r.score)) + '%'; }, 100);
+  document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetExcuse() {
+  document.getElementById('excuse-input').value = '';
+  document.getElementById('result-card').classList.remove('visible');
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('score-bar').style.width = '0%';
+}
+
+// ---- HOMEWORK MODE ----
+function startHomework() {
+  const errEl = document.getElementById('hw-error-msg');
+  errEl.style.display = 'none';
+  document.getElementById('hw-start-btn').disabled = true;
+  document.getElementById('hw-loading').classList.add('visible');
+  document.getElementById('hw-question-card').classList.remove('visible');
+
+  setTimeout(() => {
+    const questionsList = homeworkQuestionsBank[selectedSubject];
+    if (!questionsList || questionsList.length === 0) {
+      errEl.textContent = "❌ Subject pool data is empty. Try a different one!";
+      errEl.style.display = 'block';
+      document.getElementById('hw-start-btn').disabled = false;
+      document.getElementById('hw-loading').classList.remove('visible');
+      return;
+    }
+
+    // Pick random question from list pool
+    const q = questionsList[Math.floor(Math.random() * questionsList.length)];
+    currentQuestion = q.question;
+    currentAnswer = q.answer;
+
+    document.getElementById('hw-subject-badge').textContent = selectedSubject;
+    document.getElementById('hw-question-text').textContent = currentQuestion;
+    document.getElementById('hw-answer-input').value = '';
+    document.getElementById('hw-answer-input').disabled = false;
+    document.getElementById('submit-answer-btn').disabled = false;
+    document.getElementById('submit-answer-btn').textContent = 'SUBMIT ANSWER ✓';
+    document.getElementById('hw-result').classList.remove('visible');
+    document.getElementById('hw-question-card').classList.add('visible');
+    document.getElementById('hw-loading').classList.remove('visible');
+    document.getElementById('hw-question-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    startTimer();
+  }, 1000);
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timeLeft = TIMER_SECONDS;
+  updateTimerUI();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerUI();
+    if (timeLeft <= 0) { clearInterval(timerInterval); timeExpired(); }
+  }, 1000);
+}
+
+function updateTimerUI() {
+  const mins = Math.floor(timeLeft / 60);
+  const secs = timeLeft % 60;
+  document.getElementById('timer-display').textContent = mins + ':' + secs.toString().padStart(2, '0');
+  const pct = (timeLeft / TIMER_SECONDS) * 100;
+  const bar = document.getElementById('timer-bar');
+  bar.style.width = pct + '%';
+  bar.style.background = pct > 50 ? '#2d6a4f' : pct > 25 ? '#e07c24' : '#e63946';
+}
+
+function timeExpired() {
+  document.getElementById('hw-answer-input').disabled = true;
+  document.getElementById('submit-answer-btn').disabled = true;
+  showHomeworkResult('wrong', '', currentAnswer, "Time's up! The clock ran out — this is exactly why we don't do homework at the last second. Better luck next time.");
+}
+
+function submitAnswer() {
+  const userAnswer = document.getElementById('hw-answer-input').value.trim();
+  if (!userAnswer) return;
+
+  clearInterval(timerInterval);
+  document.getElementById('hw-answer-input').disabled = true;
+  document.getElementById('submit-answer-btn').disabled = true;
+  document.getElementById('submit-answer-btn').textContent = 'Grading...';
+
+  setTimeout(() => {
+    const isCorrect = userAnswer.toLowerCase() === currentAnswer.toLowerCase();
+    
+    // Quick automated sub-evaluation fallback check 
+    let status = 'wrong';
+    let textExplanation = "That's not quite what we are looking for. Let's make sure to review this textbook section before tomorrow's quiz.";
+    
+    if (isCorrect) {
+      status = 'correct';
+      textExplanation = "Excellent! You matched the expected textbook benchmark accurately under intense clock pressure.";
+    } else if (currentAnswer.toLowerCase().includes(userAnswer.toLowerCase()) && userAnswer.length > 2) {
+      status = 'partial';
+      textExplanation = "You're extremely close and on the right track, but some core precision terminology is missing.";
+    }
+
+    showHomeworkResult(status, userAnswer, currentAnswer, textExplanation);
+  }, 800);
+}
+
+function showHomeworkResult(result, userAnswer, correctAnswer, explanation) {
+  const labels = { correct: '✅ Correct! Nice work!', partial: '🟡 Partially correct.', wrong: '❌ Not quite right.' };
+  const verdictEl = document.getElementById('hw-verdict');
+  verdictEl.textContent = labels[result] || '❌ Not quite right.';
+  verdictEl.className = 'hw-verdict ' + (result || 'wrong');
+  document.getElementById('correct-answer-box').textContent = '✏️ Correct answer: ' + correctAnswer;
+  document.getElementById('hw-explanation').textContent = explanation;
+  document.getElementById('hw-result').classList.add('visible');
+  document.getElementById('submit-answer-btn').textContent = 'SUBMIT ANSWER ✓';
+}
+
+function resetHomework() {
+  clearInterval(timerInterval);
+  currentQuestion = null;
+  currentAnswer = null;
+  document.getElementById('hw-question-card').classList.remove('visible');
+  document.getElementById('hw-result').classList.remove('visible');
+  document.getElementById('hw-start-btn').disabled = false;
+  document.getElementById('hw-answer-input').value = '';
+  document.getElementById('hw-answer-input').disabled = false;
+  document.getElementById('submit-answer-btn').disabled = false;
+  document.getElementById('submit-answer-btn').textContent = 'SUBMIT ANSWER ✓';
+  document.getElementById('timer-bar').style.width = '100%';
+  document.getElementById('timer-display').textContent = '2:00';
+}
+</script>
+</body>
+</html>
